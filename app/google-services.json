@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "991535279170",
+    "firebase_url": "https://doctorsappointment-17e30.firebaseio.com",
+    "project_id": "doctorsappointment-17e30",
+    "storage_bucket": "doctorsappointment-17e30.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:991535279170:android:edf38a2410c1eafa",
+        "android_client_info": {
+          "package_name": "com.tarikul4152.doctorsappointment"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "991535279170-inh87nejgfqhegtp0neo1ugfhenhmck6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tarikul4152.doctorsappointment",
+            "certificate_hash": "88bc3e2c8ef6744d69fcdf7a49b392e55fef9cc1"
+          }
+        },
+        {
+          "client_id": "991535279170-c8ks6rirj2f0ko7rei62mm565so57toj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBUKSpTSKkyVC_kI2b1u9_jSq_BIrGfI-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "991535279170-c8ks6rirj2f0ko7rei62mm565so57toj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
