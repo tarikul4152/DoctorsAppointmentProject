@@ -85,6 +85,7 @@ public class ActivitySignUp extends AppCompatActivity implements View.OnClickLis
         this.activity=ActivitySignUp.this;
         ViewInit();
         ClassInit();
+        String name;
     }
 
     ///View Initialization
