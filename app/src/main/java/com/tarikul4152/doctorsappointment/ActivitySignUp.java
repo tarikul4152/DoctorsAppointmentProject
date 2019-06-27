@@ -15,6 +15,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
@@ -31,7 +32,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ActivitySignUp extends AppCompatActivity implements View.OnClickListener,RadioGroup.OnCheckedChangeListener
+public class ActivitySignUp extends AppCompatActivity implements View.OnClickListener,RadioGroup.OnCheckedChangeListener, MyDialog.MyAlertDialogCommunicator
 {
     StringBuilder message;
 
@@ -64,6 +65,7 @@ public class ActivitySignUp extends AppCompatActivity implements View.OnClickLis
     private PermissionHelperClass permissionHelperClass;
     private ValidationPatternClass validationPatternClass;
     private MyToastClass myToastClass;
+    MyDialog myDialog;
 
     ///Instance type varibale
     private Intent intent;
@@ -138,6 +140,7 @@ public class ActivitySignUp extends AppCompatActivity implements View.OnClickLis
         permissionGroup=new PermissionGroup();
         validationPatternClass=new ValidationPatternClass();
         myToastClass=new MyToastClass(activity);
+        myDialog=new MyDialog(ActivitySignUp.this);
     }
 
 
@@ -204,12 +207,24 @@ public class ActivitySignUp extends AppCompatActivity implements View.OnClickLis
             if (CheckPhoneSignUp)
             {
                 PhoneSignUpMethod();
+                int ButtonId[]={R.id.confrim_btn,R.id.resend_btn};
+                int EdittextId[]={R.id.verification_et};
+                android.app.AlertDialog dialog= myDialog.MyCustomDialog(R.layout.activity_signin_or_signup,ButtonId,EdittextId,"Title","Message");
+                dialog.show();
             }
 
             if (CheckEmailSignUp)
             {
                 EmailSignUpMethod();
+                int ButtonId[]={R.id.confrim_btn,R.id.resend_btn};
+                int EdittextId[]={R.id.verification_et};
+                android.app.AlertDialog dialog= myDialog.MyCustomDialog(R.layout.verification,ButtonId,EdittextId,"Title","Message");
+                dialog.show();
             }
+        }
+        else
+        {
+            myToastClass.LToast("Something wrong\nCheck every field with green sign");
         }
     }
 
@@ -217,12 +232,14 @@ public class ActivitySignUp extends AppCompatActivity implements View.OnClickLis
     {
         Map<String,String> map=new HashMap<>();
         map=GetAllData();
+        myToastClass.LToast("EmailSignUpMethod Called");
     }
 
     private void PhoneSignUpMethod()
     {
         Map<String,String> map=new HashMap<>();
         map=GetAllData();
+        myToastClass.LToast("PhoneSignUpMethod Called");
     }
 
     private Map GetAllData()
@@ -316,6 +333,28 @@ public class ActivitySignUp extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    @Override
+    public void DialogResultSuccess(String result)
+    {
+        if (result=="Resend")
+        {
+            if (CheckPhoneSignUp)
+            {
+                PhoneSignUpMethod();
+            }
+            if (CheckEmailSignUp)
+            {
+                EmailSignUpMethod();
+            }
+        }
+    }
+
+    @Override
+    public void MyCustomDialogGetData(Map<Integer, String> integerStringMap)
+    {
+        String code=integerStringMap.get(0);
+        myToastClass.LToast(code);
+    }
 
 
     class MyTextWatcher implements TextWatcher
