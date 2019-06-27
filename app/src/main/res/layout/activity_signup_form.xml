@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/signup_image_upload_civ"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_launcher_background"/>
+        <Button
+            android:id="@+id/signup_image_upload_btn"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:text="Upload"
+            android:layout_gravity="center"/>
+        <EditText
+            android:id="@+id/signup_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Name"/>
+        <EditText
+            android:id="@+id/signup_father_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Father's Name"/>
+        <EditText
+            android:id="@+id/signup_mother_name_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Mother's Name"/>
+        <EditText
+            android:id="@+id/signup_credential_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email/Phone"/>
+        <EditText
+            android:id="@+id/signup_password_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:hint="Password"/>
+        <EditText
+            android:id="@+id/signup_retype_password_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword"
+            android:hint="Retype password"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:gravity="center"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:text="I am"
+                android:textSize="20sp"/>
+            <RadioGroup
+                android:id="@+id/signup_gender_radio_group"
+                android:layout_weight="2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <RadioButton
+                    android:id="@+id/signup_male_rbtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Male"/>
+                <RadioButton
+                    android:id="@+id/signup_female_rbtn"
+                    android:layout_weight="1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Female"/>
+            </RadioGroup>
+        </LinearLayout>
+        <LinearLayout
+            android:background="@color/colorPrimaryDark"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:textColor="#FFF"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:text="Date of Birth"
+                android:textSize="20sp"/>
+            <android.support.design.widget.TextInputLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textColorHint="#FFF">
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/signup_birthdate_date_tiet"
+                    android:textColor="#FFF"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:inputType="date"
+                    android:layout_height="match_parent"
+                    android:hint="Date"/>
+            </android.support.design.widget.TextInputLayout>
+            <android.support.design.widget.TextInputLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textColorHint="#FFF">
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/signup_birthdate_month_tiet"
+                    android:gravity="center"
+                    android:textColor="#FFF"
+                    android:layout_width="match_parent"
+                    android:inputType="date"
+                    android:layout_height="match_parent"
+                    android:hint="Month"/>
+            </android.support.design.widget.TextInputLayout>
+            <android.support.design.widget.TextInputLayout
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:textColorHint="#FFF">
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/signup_birthdate_year_tiet"
+                    android:textColor="#FFF"
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:inputType="date"
+                    android:layout_height="match_parent"
+                    android:hint="Year"/>
+            </android.support.design.widget.TextInputLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/signup_choose_patient_btn"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#D1CECE"
+                android:text="Patient" />
+
+            <Button
+                android:id="@+id/signup_choose_doctor_btn"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#D1CECE"
+                android:text="Doctor" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/signup_btn"
+            android:layout_gravity="center"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:text="@string/sign_up"/>
+        <TextView
+            android:id="@+id/signup_goto_signin_activity_tv"
+            android:textColor="@color/colorPrimaryDark"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Already have an account?Login"
+            android:textSize="20sp"/>
+
+    </LinearLayout>
+
+
+</ScrollView>
