@@ -1,6 +1,8 @@
 package com.tarikul4152.doctorsappointment;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.RecyclerView;
@@ -14,14 +16,33 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
+import android.widget.Toast;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class ActivityMain extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    GoogleSignInAccount account;
+    private FirebaseAuth mAuth=null;
+    private FirebaseUser mUser=null;
+    private Intent intent=null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        GoogleSignedInData();
+
+        mAuth=FirebaseAuth.getInstance();
+        mUser=mAuth.getCurrentUser();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -41,6 +62,14 @@ public class ActivityMain extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    private void GoogleSignedInData()
+    {
+        MyToastClass myToast=new MyToastClass(ActivityMain.this);
+        account=getIntent().getParcelableExtra(FixedVariable.GOOGLE_SIGNIN_ACCOUNT);
+        myToast.LToast(account.getDisplayName());
+        myToast.LToast(account.getEmail());
     }
 
     @Override
@@ -69,6 +98,22 @@ public class ActivityMain extends AppCompatActivity
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
+            GoogleSignInClient signInClient= GoogleSignIn.getClient(ActivityMain.this,gso);
+            signInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    MyToastClass myToast=new MyToastClass(ActivityMain.this);
+                    myToast.LToast("Signed Out Successfull");
+                    finish();
+                }
+            });
+            return true;
+        }
+        else if (id==R.id.logout)
+        {
+            mAuth.signOut();
+            finish();
             return true;
         }
 

@@ -114,7 +114,7 @@ public class ActivitySignInOrSignUp extends AppCompatActivity implements View.On
         switch (id)
         {
             case R.id.signin_goto_sign_up_activity_btn:
-                intent=new Intent(ActivitySignInOrSignUp.this, ActivitySignUp.class);
+                intent=new Intent(ActivitySignInOrSignUp.this, mActivitySignUp.class);
                 startActivity(intent);
                 break;
             case R.id.signin_btn:

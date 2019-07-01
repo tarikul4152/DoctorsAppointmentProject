@@ -18,14 +18,19 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:name=".ActivitySignInOrSignUp" />
-        <activity android:name=".ActivitySignUp"/>
-        <activity android:name=".ActivityWelcome">
+        <activity android:name=".mActivitySignUp"/>
+        <activity android:name=".ActivityWelcome"/>
+        <activity android:name=".ActivitySignUp">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.VIEW"/>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".ActivityVarificationCheck"/>
+        <activity android:name=".ActivityProfileCompleteOne"/>
+        <activity android:name=".ActivityProfileCompleteTwo"/>
+        <activity android:name=".ActivityProfileCompleteThree"/>
     </application>
 
 </manifest>

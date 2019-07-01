@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/abcd">
+
+    <EditText
+        android:id="@+id/signup_email_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Email here"/>
+    <EditText
+        android:id="@+id/signup_password_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Password here"/>
+    <EditText
+        android:id="@+id/signup_retype_password_et"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Retype passowrd here"/>
+    <Button
+        android:id="@+id/signup_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sign Up"/>
+    <ProgressBar
+        android:indeterminate="true"
+        android:id="@+id/signup_progress_bar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
+    <Button
+        android:id="@+id/signup_phone_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create with phone number"/>
+    <Button
+        android:id="@+id/signup_google_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create with Google Account"/>
+
+</LinearLayout>

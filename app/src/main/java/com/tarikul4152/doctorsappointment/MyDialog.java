@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,13 +15,17 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimerTask;
+import java.util.logging.Handler;
 
 public class MyDialog
 {
+    int CountResend=0;
     AlertDialog dialog;
     View view;
     Button[] btn;
     EditText[] et;
+    String[] informationString;
     public int communicatorCount=0;
     MyAlertDialogCommunicator myAlertDialogCommunicator;
     private Activity activity;
@@ -30,8 +35,11 @@ public class MyDialog
     }
 
 
-    public Dialog MyAlertDialog(String title,String message,String pos,String neg)
+    ///This is my simple alert dialog which works only for take decesion wheather it is right or wrong
+
+    public AlertDialog MyAlertDialog(String title,String message,String pos,String neg)
     {
+        myAlertDialogCommunicator=(MyAlertDialogCommunicator)activity;
         AlertDialog.Builder builder=new AlertDialog.Builder(activity);
         builder.setTitle(title);
         builder.setMessage(message);
@@ -55,7 +63,10 @@ public class MyDialog
        return dialog;
     }
 
-    public AlertDialog MyCustomDialog(int layout,int[] ButtonId,int[] EditTextId,String title,String message)
+    ///This is my custom dialog.It take layout and also it can perform for maximum 5 Button onClick and EditText not limited
+    ///And Sending also a information string that can identify the operation for sending and receiving data
+
+    public AlertDialog MyCustomDialog(int layout,int[] ButtonId,int[] EditTextId,String[] information,String title,String message)
     {
         AlertDialog.Builder builder=new AlertDialog.Builder(activity);
         builder.setTitle(title);
@@ -64,6 +75,7 @@ public class MyDialog
 
         btn=new Button[ButtonId.length];
         et=new EditText[EditTextId.length];
+        informationString=new String[information.length];
         for(int i=0; i<ButtonId.length; i++)
         {
             btn[i]=(view).findViewById(ButtonId[i]);
@@ -71,6 +83,10 @@ public class MyDialog
         for(int i=0; i<EditTextId.length; i++)
         {
             et[i]=(view).findViewById(EditTextId[i]);
+        }
+        for(int i=0; i<information.length; i++)
+        {
+            informationString[i]=information[i];
         }
         builder.setView(view);
         if (ButtonId.length==1)
@@ -113,10 +129,13 @@ public class MyDialog
         btn[0].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myAlertDialogCommunicator=(MyAlertDialogCommunicator)activity;
-                Map<Integer,String> map=GetAllData();
-                myAlertDialogCommunicator.MyCustomDialogGetData(map);
-                dialog.cancel();
+                ///Sending all the data of the edit text
+                if (informationString[0]=="ConfirmBtn")
+                {
+                    myAlertDialogCommunicator = (MyAlertDialogCommunicator) activity;
+                    Map<Integer, String> map = GetAllData();
+                    myAlertDialogCommunicator.MyCustomDialogGetData(map);
+                }
             }
         });
     }
@@ -125,8 +144,26 @@ public class MyDialog
         btn[1].setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myAlertDialogCommunicator=(MyAlertDialogCommunicator)activity;
-                myAlertDialogCommunicator.DialogResultSuccess("Resend");
+                ///This button work only for take decession
+                if (informationString[1]=="ResendBtn")
+                {
+                    CountResend++;
+                    myAlertDialogCommunicator=(MyAlertDialogCommunicator)activity;
+                    myAlertDialogCommunicator.DialogResultSuccess("Resend");
+                    if (CountResend>3)
+                    {
+                        btn[1].setEnabled(false);
+                    }
+                    else {
+                        btn[1].setEnabled(false);
+                        btn[1].postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                btn[1].setEnabled(true);
+                            }
+                        }, 60000);
+                    }
+                }
             }
         });
     }
@@ -163,7 +200,11 @@ public class MyDialog
         Map<Integer,String> map=new HashMap<>();
         for(int i=0; i<et.length; i++)
         {
-            map.put(i,et[i].getText().toString());
+            ///Only takes the first parameter
+            if (informationString[2]=="VerificationEt" && i==0)
+            {
+                map.put(i,et[i].getText().toString());
+            }
         }
         return map;
     }

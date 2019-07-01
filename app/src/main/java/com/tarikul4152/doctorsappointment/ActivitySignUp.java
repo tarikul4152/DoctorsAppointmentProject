@@ -1,688 +1,225 @@
 package com.tarikul4152.doctorsappointment;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.net.Uri;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.TextInputEditText;
-import android.support.v7.app.AlertDialog;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.util.Base64;
 import android.util.Log;
-import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioGroup;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.ProgressBar;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Map;
+import com.facebook.login.widget.LoginButton;
+import com.google.android.gms.auth.api.credentials.Credentials;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.internal.GoogleSignInOptionsExtensionParcelable;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthCredential;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
-import de.hdodenhof.circleimageview.CircleImageView;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
-public class ActivitySignUp extends AppCompatActivity implements View.OnClickListener,RadioGroup.OnCheckedChangeListener, MyDialog.MyAlertDialogCommunicator
-{
-    StringBuilder message;
+public class ActivitySignUp extends AppCompatActivity implements View.OnClickListener,MyCommunicator {
+    //Firebase Variable
+    private FirebaseAuth mAuth;
+    private DatabaseReference mReference;
 
-    //Field Validation Variable
-    boolean CheckUploadImageValidationResult,
-            CheckNameValidationResult=false,
-            CheckFatherNameValidationResult=false,
-            CheckMotherNameValidationResult=false,
-            CheckCredentialValidationResult=false,
-            CheckPasswordValidationResult=false,
-            CheckRetypePasswordValidationResult=false,
-            CheckGenderValidationResult=false,
-            CheckBirthDateDateValidationResult=false,
-            CheckBirthDateMonthValidationResult=false,
-            CheckBirthDateYearValidationResult=false;
-    ///Getting Field data String Variable
-    String NameString,FatherNameString,MotherNameString,CredentialString, PasswordString,
-            RetypePasswordString,GenderString,BirthDateDateString,BirthDateMonthString,
-            BirthDateYearString,BirthDateString,AccountTypeString="Patient";
-
-    ///Credential Type Variable
-    boolean CheckPhoneSignUp=false,CheckEmailSignUp=false,CheckPasswordMatched=false;
-
-    ///static varibale
-    private static final int CAMERA_REQUEST_CODE=100;
-    private static final int GALLERY_REQUEST_CODE=101;
-
-    ///Class Instance Type Varibale
-    private PermissionGroup permissionGroup;
-    private PermissionHelperClass permissionHelperClass;
-    private ValidationPatternClass validationPatternClass;
-    private MyToastClass myToastClass;
-    MyDialog myDialog;
-
-    ///Instance type varibale
+    //Resource variable
     private Intent intent;
-    private Activity activity;
+    private FragmentManager fm;
+    private FragmentTransaction transaction;
 
-    ///Xml Field Reference Varibale
-    CircleImageView SignUpImageUploadCiv;
-    Button SignUpImageUploadBtn,SignUpBtn,SignUpChoosePatientBtn,SignUpChooseDoctorBtn;
-    EditText SignUpNameEt,SignUpFatherNameEt,SignUpMotherNameEt,SignUpCredentialEt,SignUpPasswordEt,SignUpReTypePasswordEt;
-    RadioGroup SignUpGenderRadioGroup;
-    TextInputEditText SignUpBirthdateDateTiet,SignUpBirthdateMonthTiet,SignUpBirthdateYearTiet;
-    TextView GotoSigninActivityTv;
+    //Class Variable
+    private SignInOrSignUpClass SignUpClass;
+    private MyTextWatcher myTextWatcher;
+    private MyToastClass myToast;
+
+    //String variable
+    private String EmailString, PasswordString;
+    private int WRONG_COLOR;
+    private boolean AccountCreationResult;
+
+    //Ui Variable
+    private EditText SignUpEmailEt, SignUpPasswordEt, SignUpRetypePasswordEt;
+    private Button SignUpBtn, SignUpPhoneBtn, SignUpGoogleBtn;
+    private ProgressBar SignUpProgressBar;
+    private Activity activity;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signup_form);
-
-        this.activity=ActivitySignUp.this;
-        ViewInit();
-        ClassInit();
-        String name;
+        setContentView(R.layout.activity_signup);
+        this.activity = ActivitySignUp.this;
+        InitUi();
+        InitClass();
     }
+    /// iLw+LI72dE1p/N96SbOS5V/vnME=
+    private void InitUi() {
+        //******************************TextWatcher Class Hints**********************************//
+        //*******MyTextWatcher(Activity activity,String WhichEditText,int EditTextId)*********/////
+        SignUpEmailEt = findViewById(R.id.signup_email_et);
+        SignUpEmailEt.addTextChangedListener(new MyTextWatcher(activity, FixedVariable.Email, R.id.signup_email_et));
+        SignUpPasswordEt = findViewById(R.id.signup_password_et);
+        SignUpPasswordEt.addTextChangedListener(new MyTextWatcher(activity, FixedVariable.Password, R.id.signup_password_et));
+        SignUpRetypePasswordEt = findViewById(R.id.signup_retype_password_et);
+        SignUpRetypePasswordEt.addTextChangedListener(new MyTextWatcher(activity, FixedVariable.Password, R.id.signup_retype_password_et));
 
-    ///View Initialization
-    private void ViewInit()
-    {
-        SignUpImageUploadCiv=findViewById(R.id.signup_image_upload_civ);
-
-        SignUpImageUploadBtn=findViewById(R.id.signup_image_upload_btn);
-        SignUpImageUploadBtn.setOnClickListener(this);
-
-        SignUpNameEt=findViewById(R.id.signup_name_et);
-        SignUpNameEt.addTextChangedListener(new MyTextWatcher("NameTextWatcher"));
-        SignUpFatherNameEt=findViewById(R.id.signup_father_name_et);
-        SignUpFatherNameEt.addTextChangedListener(new MyTextWatcher("FatherNameTextWatcher"));
-        SignUpMotherNameEt=findViewById(R.id.signup_mother_name_et);
-        SignUpMotherNameEt.addTextChangedListener(new MyTextWatcher("MotherNameTextWatcher"));
-        SignUpCredentialEt=findViewById(R.id.signup_credential_et);
-        SignUpCredentialEt.addTextChangedListener(new MyTextWatcher("CredentialTextWatcher"));
-        SignUpPasswordEt=findViewById(R.id.signup_password_et);
-        SignUpPasswordEt.addTextChangedListener(new MyTextWatcher("PasswordTextWatcher"));
-        SignUpReTypePasswordEt=findViewById(R.id.signup_retype_password_et);
-        SignUpReTypePasswordEt.addTextChangedListener(new MyTextWatcher("RetypePasswordTextWatcher"));
-
-        SignUpGenderRadioGroup=findViewById(R.id.signup_gender_radio_group);
-        SignUpGenderRadioGroup.setOnCheckedChangeListener(this);
-
-        SignUpBirthdateDateTiet=findViewById(R.id.signup_birthdate_date_tiet);
-        SignUpBirthdateDateTiet.addTextChangedListener(new MyTextWatcher("BirthDateDateTextWatcher"));
-        SignUpBirthdateMonthTiet=findViewById(R.id.signup_birthdate_month_tiet);
-        SignUpBirthdateMonthTiet.addTextChangedListener(new MyTextWatcher("BirthDateMonthTextWatcher"));
-        SignUpBirthdateYearTiet=findViewById(R.id.signup_birthdate_year_tiet);
-        SignUpBirthdateYearTiet.addTextChangedListener(new MyTextWatcher("BirthDateYearTextWatcher"));
-
-        SignUpChoosePatientBtn=findViewById(R.id.signup_choose_patient_btn);
-        SignUpChoosePatientBtn.setOnClickListener(this);
-        SignUpChooseDoctorBtn=findViewById(R.id.signup_choose_doctor_btn);
-        SignUpChooseDoctorBtn.setOnClickListener(this);
-
-        SignUpBtn=findViewById(R.id.signup_btn);
+        SignUpBtn = findViewById(R.id.signup_btn);
         SignUpBtn.setOnClickListener(this);
+        SignUpPhoneBtn = findViewById(R.id.signup_phone_btn);
+        SignUpPhoneBtn.setOnClickListener(this);
+        SignUpGoogleBtn = findViewById(R.id.signup_google_btn);
+        SignUpGoogleBtn.setOnClickListener(this);
 
-        GotoSigninActivityTv=(TextView) findViewById(R.id.signup_goto_signin_activity_tv);
-        GotoSigninActivityTv.setOnClickListener(this);
+        SignUpProgressBar = findViewById(R.id.signup_progress_bar);
 
+        WRONG_COLOR = getResources().getColor(R.color.colorAccent);
     }
 
-    private void ClassInit()
-    {
-        permissionHelperClass=new PermissionHelperClass(activity);
-        permissionGroup=new PermissionGroup();
-        validationPatternClass=new ValidationPatternClass();
-        myToastClass=new MyToastClass(activity);
-        myDialog=new MyDialog(ActivitySignUp.this);
+    private void InitClass() {
+        mAuth = FirebaseAuth.getInstance();
+        mReference = FirebaseDatabase.getInstance().getReference();
+        myTextWatcher = new MyTextWatcher();
+        myToast = new MyToastClass(activity);
+        SignUpClass = new SignInOrSignUpClass(ActivitySignUp.this);
+        mAuth = FirebaseAuth.getInstance();
     }
 
-
-    //Event Listener
     @Override
-    public void onClick(View v)
-    {
-        int id=v.getId();
-        switch (id)
-        {
-            case R.id.signup_image_upload_btn:
-                SignUpUploadImageFromCameraOrGallery();
-                break;
-            case R.id.signup_choose_patient_btn:
-                SignUpChoosePatientBtn.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                SignUpChooseDoctorBtn.setBackgroundColor(getResources().getColor(R.color.Button_Default));
-                AccountTypeString="Patient";
-                break;
-            case R.id.signup_choose_doctor_btn:
-                SignUpChoosePatientBtn.setBackgroundColor(getResources().getColor(R.color.Button_Default));
-                SignUpChooseDoctorBtn.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
-                AccountTypeString="Doctor";
-                break;
+    public void onClick(View v) {
+        switch (v.getId()) {
             case R.id.signup_btn:
-                SignUpMethod();
-                break;
-            case R.id.signup_goto_signin_activity_tv:
-                intent=new Intent(ActivitySignUp.this, ActivitySignInOrSignUp.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
-                break;
-        }
-    }
-
-    @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId)
-    {
-        if (checkedId==R.id.signup_male_rbtn)
-        {
-            GenderString="Male";
-        }
-        else if (checkedId==R.id.signup_female_rbtn)
-        {
-            GenderString="Female";
-        }
-    }
-
-    ///SignUp Method Starting
-    private void SignUpMethod()
-    {
-        CheckGenderValidationMethod();
-        if (SignUpPasswordEt.getText().toString().matches(SignUpReTypePasswordEt.getText().toString()))
-        {
-            CheckPasswordMatched=true;
-        }
-        else
-        {
-            CheckPasswordMatched=false;
-        }
-        if (CheckNameValidationResult&&CheckFatherNameValidationResult&&CheckMotherNameValidationResult
-                &&CheckCredentialValidationResult&&CheckPasswordValidationResult&&CheckRetypePasswordValidationResult
-                &&CheckPasswordMatched&&CheckBirthDateDateValidationResult&&CheckBirthDateMonthValidationResult&&CheckBirthDateYearValidationResult)
-        {
-            if (CheckPhoneSignUp)
-            {
-                PhoneSignUpMethod();
-                int ButtonId[]={R.id.confrim_btn,R.id.resend_btn};
-                int EdittextId[]={R.id.verification_et};
-                android.app.AlertDialog dialog= myDialog.MyCustomDialog(R.layout.activity_signin_or_signup,ButtonId,EdittextId,"Title","Message");
-                dialog.show();
-            }
-
-            if (CheckEmailSignUp)
-            {
                 EmailSignUpMethod();
-                int ButtonId[]={R.id.confrim_btn,R.id.resend_btn};
-                int EdittextId[]={R.id.verification_et};
-                android.app.AlertDialog dialog= myDialog.MyCustomDialog(R.layout.verification,ButtonId,EdittextId,"Title","Message");
-                dialog.show();
-            }
+                break;
+            case R.id.signup_phone_btn:
+                PhoneSignUpMethod();
+                break;
+            case R.id.signup_google_btn:
+                GoogleSignUpMethod();
+                break;
         }
-        else
+    }
+
+    private void EmailSignUpMethod() {
+        if (CheckWhichFieldIsWrong())
         {
-            myToastClass.LToast("Something wrong\nCheck every field with green sign");
+            SignUpProgressBar.setVisibility(View.VISIBLE);
+            SignUpClass.EmailSignUp(EmailString,PasswordString);
         }
     }
 
-    private void EmailSignUpMethod()
-    {
-        Map<String,String> map=new HashMap<>();
-        map=GetAllData();
-        myToastClass.LToast("EmailSignUpMethod Called");
+    private void PhoneSignUpMethod() {
+        intent = new Intent(activity, ActivitySendingPhoneVerification.class);
+        startActivity(intent);
     }
 
-    private void PhoneSignUpMethod()
+    private void GoogleSignUpMethod()
     {
-        Map<String,String> map=new HashMap<>();
-        map=GetAllData();
-        myToastClass.LToast("PhoneSignUpMethod Called");
-    }
-
-    private Map GetAllData()
-    {
-        Map<String,String> map=new HashMap<>();
-        NameString=SignUpNameEt.getText().toString();
-        map.put("NameString",NameString);
-        FatherNameString=SignUpFatherNameEt.getText().toString();
-        map.put("FatherNameString",FatherNameString);
-        MotherNameString=SignUpMotherNameEt.getText().toString();
-        map.put("MotherNameString",MotherNameString);
-        CredentialString=SignUpCredentialEt.getText().toString();
-        map.put("CredentialString",CredentialString);
-        PasswordString=PasswordEncryptMethod(SignUpPasswordEt.getText().toString());
-        map.put("PasswordString",CredentialString);
-        map.put("GenderString",GenderString);
-        BirthDateDateString=SignUpBirthdateDateTiet.getText().toString();
-        BirthDateMonthString=SignUpBirthdateMonthTiet.getText().toString();
-        BirthDateYearString=SignUpBirthdateYearTiet.getText().toString();
-        BirthDateString=BirthDateDateString+"-"+BirthDateMonthString+"-"+BirthDateYearString;
-        map.put("BirthDateString",BirthDateString);
-        map.put("AccountTypeString",AccountTypeString);
-        return map;
-    }
-
-    ///SignUpUploadImageFromCameraOrGallery Method Starting here
-    private void SignUpUploadImageFromCameraOrGallery()
-    {
-        final CharSequence[] options={"Capture Photo","Select from gallery","Cancel"};
-        AlertDialog.Builder builder=new AlertDialog.Builder(this);
-        builder.setTitle("Upload Profile Picture");
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int item)
-            {
-                if (options[item]=="Capture Photo")
-                {
-                    if(permissionHelperClass.CheckAndRequestPermission(permissionGroup.getCameraGroup()))
-                    {
-                        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                            startActivityForResult(takePictureIntent, CAMERA_REQUEST_CODE);
-                        }
-                    }
-                }
-                else if (options[item]=="Select from gallery")
-                {
-                    if(permissionHelperClass.CheckAndRequestPermission(permissionGroup.getStorageGroup()))
-                    {
-                        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        startActivityForResult(intent, GALLERY_REQUEST_CODE);
-                    }
-                }
-                else if (options[item]=="Cancel")
-                {
-                    dialog.dismiss();
-                }
-            }
-        });
-        builder.show();
-    }
-
-    ///Permission Request Callback result
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
-    {
-        permissionHelperClass.onRequestPermissionResult(ActivitySignUp.this,requestCode,permissions,grantResults);
+        GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
+        GoogleSignInClient signInClient= GoogleSignIn.getClient(activity,gso);
+        Intent intent=signInClient.getSignInIntent();
+        startActivityForResult(intent,101);
     }
 
 
+    private boolean CheckWhichFieldIsWrong() {
+        if (SignUpEmailEt.getCurrentTextColor() == WRONG_COLOR) {
+            SignUpEmailEt.setError("Email is invalid");
+            return false;
+        } else if (SignUpPasswordEt.getCurrentTextColor() == WRONG_COLOR) {
+            SignUpPasswordEt.setError("Password must be atleast 6 digit");
+            return false;
+        } else if (!SignUpPasswordEt.getText().toString().matches(SignUpRetypePasswordEt.getText().toString())) {
+            SignUpPasswordEt.setError("Password hasn't match");
+            return false;
+        } else {
+            EmailString = SignUpEmailEt.getText().toString();
+            PasswordString = SignUpPasswordEt.getText().toString();
+            return true;
+        }
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode==CAMERA_REQUEST_CODE && resultCode==RESULT_OK && data!=null)
+
+        if (requestCode==101 && resultCode==RESULT_OK && data!=null)
         {
-            Bundle extras = data.getExtras();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
-            SignUpImageUploadCiv.setImageBitmap(imageBitmap);
-        }
-        else if (requestCode==GALLERY_REQUEST_CODE && resultCode==RESULT_OK && data!=null)
-        {
-            Uri uri=data.getData();
-            Bitmap bitmap= null;
-            try {
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),uri);
-            } catch (IOException e) {
-                e.printStackTrace();
+            try
+            {
+                Task<GoogleSignInAccount> task=GoogleSignIn.getSignedInAccountFromIntent(data);
+                GoogleSignInAccount account=task.getResult(ApiException.class);
+                GetDataFromSignedIn(account);
+            } catch (ApiException e)
+            {
+
             }
-            SignUpImageUploadCiv.setImageBitmap(bitmap);
+        }
+    }
+    private void GetDataFromSignedIn(GoogleSignInAccount account)
+    {
+        AuthCredential credential= GoogleAuthProvider.getCredential(account.getIdToken(),null);
+        SignUpClass.AccountSignInWithCredential(credential);
+    }
+    @Override
+    public void Communicator(String type,boolean result) {
+        SignUpProgressBar.setVisibility(View.GONE);
+        switch (type)
+        {
+            case "Credential":
+                if (result)
+                {
+                    intent = new Intent(ActivitySignUp.this,ActivityProfileCompleteOne.class);
+                    intent.putExtra("Credential","Credential");
+                    startActivity(intent);
+                }
+                else
+                {
+                    myToast.LToast("Account already created\nOr something error occurred\nTry again later.");
+                }
+            case "Email":
+                if (result)
+                {
+                    intent = new Intent(ActivitySignUp.this,ActivityProfileCompleteOne.class);
+                    intent.putExtra("Email","Email");
+                    startActivity(intent);
+                }
+                else
+                {
+                    myToast.LToast("Something error occurred\nTry again later.");
+                }
+
         }
     }
 
     @Override
-    public void DialogResultSuccess(String result)
-    {
-        if (result=="Resend")
+    public void onBackPressed() {
+        super.onBackPressed();
+        if (mAuth.getCurrentUser()!=null)
         {
-            if (CheckPhoneSignUp)
-            {
-                PhoneSignUpMethod();
-            }
-            if (CheckEmailSignUp)
-            {
-                EmailSignUpMethod();
-            }
+            mAuth.signOut();
         }
     }
-
-    @Override
-    public void MyCustomDialogGetData(Map<Integer, String> integerStringMap)
-    {
-        String code=integerStringMap.get(0);
-        myToastClass.LToast(code);
-    }
-
-
-    class MyTextWatcher implements TextWatcher
-    {
-        String whichEditText;
-        public MyTextWatcher(String whichEditText)
-        {
-            this.whichEditText=whichEditText;
-        }
-
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count)
-        {
-            switch (whichEditText)
-            {
-                case "NameTextWatcher":
-                    CheckNameValidationMethod();
-                    FieldHint("NameTextWatcher");
-                    break;
-                case "FatherNameTextWatcher":
-                    CheckFatherNameValidationMethod();
-                    FieldHint("FatherNameTextWatcher");
-                    break;
-                case "MotherNameTextWatcher":
-                    CheckMotherValidationMethod();
-                    FieldHint("MotherNameTextWatcher");
-                    break;
-                case "CredentialTextWatcher":
-                    CheckCredentialValidationMethod();
-                    FieldHint("CredentialTextWatcher");
-                    break;
-                case "PasswordTextWatcher":
-                    CheckPasswordValidationMethod();
-                    FieldHint("PasswordTextWatcher");
-                    break;
-                case "RetypePasswordTextWatcher":
-                    CheckRetypePasswordValidationMethod();
-                    FieldHint("RetypePasswordTextWatcher");
-                    break;
-                case "BirthDateDateTextWatcher":
-                    CheckBirthDateDateValidationMethod();
-                    FieldHint("BirthDateDateTextWatcher");
-                    break;
-                case "BirthDateMonthTextWatcher":
-                    CheckBirthDateMonthValidationMethod();
-                    FieldHint("BirthDateMonthTextWatcher");
-                    break;
-                case "BirthDateYearTextWatcher":
-                    CheckBirthDateYearValidationMethod();
-                    FieldHint("BirthDateYearTextWatcher");
-                    break;
-                    default:
-                        myToastClass.LToast("Nothing matched");
-                        break;
-            }
-        }
-
-        @Override
-        public void afterTextChanged(Editable s) { }
-    }
-    private void FieldHint(String WhichField)
-    {
-        switch (WhichField)
-        {
-            case "NameTextWatcher":
-                if (CheckNameValidationResult)
-                {
-                    SignUpNameEt.setTextColor(getResources().getColor(R.color.colorPrimary));
-                }
-                else
-                {
-                    SignUpNameEt.setTextColor(getResources().getColor(R.color.colorAccent));
-                }
-                break;
-            case "FatherNameTextWatcher":
-                if (CheckFatherNameValidationResult)
-                {
-                    SignUpFatherNameEt.setTextColor(getResources().getColor(R.color.colorPrimary));
-                }
-                else
-                {
-                    SignUpFatherNameEt.setTextColor(getResources().getColor(R.color.colorAccent));
-                }
-                break;
-            case "MotherNameTextWatcher":
-                if (CheckMotherNameValidationResult)
-                {
-                    SignUpMotherNameEt.setTextColor(getResources().getColor(R.color.colorPrimary));
-                }
-                else
-                {
-                    SignUpMotherNameEt.setTextColor(getResources().getColor(R.color.colorAccent));
-                }
-                break;
-            case "CredentialTextWatcher":
-                if (CheckCredentialValidationResult)
-                {
-                    SignUpCredentialEt.setTextColor(getResources().getColor(R.color.colorPrimary));
-                }
-                else
-                {
-                    SignUpCredentialEt.setTextColor(getResources().getColor(R.color.colorAccent));
-                }
-                break;
-            case "PasswordTextWatcher":
-                if (CheckPasswordValidationResult)
-                {
-                    SignUpPasswordEt.setTextColor(getResources().getColor(R.color.colorPrimary));
-                }
-                else
-                {
-                    SignUpPasswordEt.setTextColor(getResources().getColor(R.color.colorAccent));
-                }
-                break;
-            case "RetypePasswordTextWatcher":
-                if (CheckRetypePasswordValidationResult)
-                {
-                    SignUpReTypePasswordEt.setTextColor(getResources().getColor(R.color.colorPrimary));
-                }
-                else
-                {
-                    SignUpReTypePasswordEt.setTextColor(getResources().getColor(R.color.colorAccent));
-                }
-                break;
-            case "BirthDateDateTextWatcher":
-                if (!CheckBirthDateDateValidationResult)
-                {
-                    SignUpBirthdateDateTiet.setError("Date must be 01 to 31");
-                }
-                break;
-            case "BirthDateMonthTextWatcher":
-                if (!CheckBirthDateMonthValidationResult)
-                {
-                    SignUpBirthdateMonthTiet.setError("Month must be 01 to 12");
-                }
-                break;
-            case "BirthDateYearTextWatcher":
-                if (!CheckBirthDateYearValidationResult)
-                {
-                    SignUpBirthdateYearTiet.setError("Year must be 1950 to current");
-                }
-                break;
-            default:
-                myToastClass.LToast("Nothing matched");
-                break;
-        }
-
-
-        if (CheckCredentialValidationResult)
-        {
-            SignUpCredentialEt.setTextColor(getResources().getColor(R.color.colorPrimary));
-        }
-        else
-        {
-            SignUpCredentialEt.setTextColor(getResources().getColor(R.color.colorAccent));
-        }
-        if (CheckPasswordValidationResult)
-        {
-            SignUpPasswordEt.setTextColor(getResources().getColor(R.color.colorPrimary));
-        }
-        else
-        {
-            SignUpPasswordEt.setTextColor(getResources().getColor(R.color.colorAccent));
-        }
-
-    }
-    private void CheckNameValidationMethod()
-    {
-        NameString=SignUpNameEt.getText().toString();
-        if (validationPatternClass.getName_Pattern().matcher(NameString).matches())
-        {
-            CheckNameValidationResult=true;
-        }
-        else
-        {
-            CheckNameValidationResult=false;
-        }
-    }
-    private void CheckFatherNameValidationMethod()
-    {
-        FatherNameString=SignUpFatherNameEt.getText().toString();
-        if (validationPatternClass.getName_Pattern().matcher(FatherNameString).matches())
-        {
-            CheckFatherNameValidationResult=true;
-        }
-        else
-        {
-            CheckFatherNameValidationResult=false;
-        }
-    }
-    private void CheckMotherValidationMethod()
-    {
-        MotherNameString=SignUpMotherNameEt.getText().toString();
-        if (validationPatternClass.getName_Pattern().matcher(MotherNameString).matches())
-        {
-            CheckMotherNameValidationResult=true;
-        }
-        else
-        {
-            CheckMotherNameValidationResult=false;
-        }
-    }
-    private void CheckCredentialValidationMethod()
-    {
-        CredentialString=SignUpCredentialEt.getText().toString();
-        if (validationPatternClass.getEmail_Pattern().matcher(CredentialString).matches())
-        {
-            CheckEmailSignUp=true;
-            CheckPhoneSignUp=false;
-            CheckCredentialValidationResult=true;
-        }
-        else if (Patterns.PHONE.matcher(CredentialString).matches())
-        {
-            CheckEmailSignUp=false;
-            CheckPhoneSignUp=true;
-            CheckCredentialValidationResult=true;
-        }
-        else
-        {
-            CheckCredentialValidationResult=false;
-        }
-    }
-    private void CheckPasswordValidationMethod()
-    {
-        PasswordString=SignUpPasswordEt.getText().toString();
-        if (validationPatternClass.getPassword_Normmal_Pattern().matcher(PasswordString).matches())
-        {
-            CheckPasswordValidationResult=true;
-        }
-        else
-        {
-            CheckPasswordValidationResult=false;
-        }
-    }
-    private void CheckRetypePasswordValidationMethod()
-    {
-        RetypePasswordString=SignUpReTypePasswordEt.getText().toString();
-        if ((validationPatternClass.getPassword_Normmal_Pattern().matcher(RetypePasswordString).matches())
-                && (RetypePasswordString.matches(SignUpPasswordEt.getText().toString())))
-        {
-            CheckRetypePasswordValidationResult=true;
-        }
-        else
-        {
-            CheckRetypePasswordValidationResult=false;
-        }
-    }
-    private void CheckBirthDateDateValidationMethod()
-    {
-        BirthDateDateString=SignUpBirthdateDateTiet.getText().toString();
-        if (StringToInt(BirthDateDateString)<0 || StringToInt(BirthDateDateString)>31)
-        {
-            CheckBirthDateDateValidationResult=false;
-        }
-        else
-        {
-            CheckBirthDateDateValidationResult=true;
-        }
-    }
-    private void CheckBirthDateMonthValidationMethod()
-    {
-        BirthDateMonthString=SignUpBirthdateMonthTiet.getText().toString();
-        if (StringToInt(BirthDateMonthString)<0 || StringToInt(BirthDateMonthString)>12)
-        {
-            CheckBirthDateMonthValidationResult=false;
-        }
-        else
-        {
-            CheckBirthDateMonthValidationResult=true;
-        }
-    }
-    private void CheckBirthDateYearValidationMethod()
-    {
-        BirthDateYearString= SignUpBirthdateYearTiet.getText().toString();
-        if (StringToInt(BirthDateYearString)<(Calendar.getInstance().get(Calendar.YEAR)-120) || StringToInt(BirthDateYearString)> Calendar.getInstance().get(Calendar.YEAR))
-        {
-            CheckBirthDateYearValidationResult=false;
-        }
-        else
-        {
-            CheckBirthDateYearValidationResult=true;
-        }
-    }
-
-    private void CheckGenderValidationMethod()
-    {
-        if (GenderString!=null)
-        {
-            CheckGenderValidationResult=true;
-        }
-        else
-        {
-            CheckGenderValidationResult=false;
-        }
-    }
-
-    private String PasswordEncryptMethod(String passwordString)
-    {
-        return "Unknown";
-    }
-
-    private boolean CheckFieldEmpty(String checkString)
-    {
-        if (checkString.matches("")|| checkString.length()<4)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    private int StringToInt(String number)
-    {
-        try {
-            return Integer.parseInt(number);
-        } catch (Exception e)
-        {
-            Toast.makeText(ActivitySignUp.this,"Number format incorrect",Toast.LENGTH_SHORT).show();
-        }
-
-        return -1;
-    }
-
 }
-
-
-///NameTextWatcher,FatherNameTextWatcher,MotherNameTextWatcher,CredentialTextWatcher,PasswordTextWatcher,RetypePasswordTextWatcher,BirthDateDateTextWatcher,BirthDateMonthTextWatcher,BirthDateYearTextWatcher

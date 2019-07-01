@@ -1,6 +1,7 @@
 package com.tarikul4152.doctorsappointment;
 
 import android.app.Activity;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 public class MyToastClass
